@@ -49,6 +49,14 @@ async function verifyFixtures(): Promise<void> {
     const { data: profiles, error: profileError } = await own.api.from('profiles').select('id')
     assert.equal(profileError, null, 'Own profile lookup failed.')
     assert.deepEqual(profiles, [{ id: own.id }], 'Only the authenticated profile may be returned.')
+    const { data: customers, error: customerError } = await own.api.from('demo_customers').select('user_id,license_svg,synthetic')
+    assert.equal(customerError, null, 'Customer lookup failed.')
+    assert.equal(customers?.length, 1, 'Exactly one own customer record must be visible.')
+    assert.equal(customers?.[0]?.user_id, own.id, 'Customer must belong to the authenticated principal.')
+    assert.ok(customers?.[0]?.license_svg.includes('SAMPLE / 架空・無効'), 'Customer image must be a fictional sample.')
+    const foreignCustomer = await own.api.from('demo_customers').select('user_id').eq('user_id', other.id)
+    assert.equal(foreignCustomer.error, null, 'Customer RLS query failed.')
+    assert.deepEqual(foreignCustomer.data, [], 'Other customer identity and image must not be readable.')
     for (const [table, column, value] of [
       ['profiles', 'id', other.id],
       ['orders', 'id', foreign.orders[0]!.id],

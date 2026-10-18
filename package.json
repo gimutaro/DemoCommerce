@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev:demo": "tsx scripts/configure-local.ts --demo && vite --host 127.0.0.1 --port 5188",
     "build": "tsx scripts/assert-lab-isolated.ts && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "lint": "eslint .",
@@ -26,9 +27,11 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
     "hono": "^4.13.13",
+    "jose": "^6.2.12",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-router-dom": "^7.18.4"
+    "react-router-dom": "^7.18.4",
+    "sql.js": "1.15.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.64.0",
@@ -38,6 +41,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@types/sql.js": "^1.4.11",
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^7.1.1",

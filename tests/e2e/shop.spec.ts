@@ -62,7 +62,7 @@ test('mock catalog never offers a fake login', async ({ page }) => {
   await expect(page).toHaveURL(/\/login/);
   await expect(page.getByLabel('メールアドレス', { exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'ログインする' })).toBeDisabled();
-  await expect(page.getByText('現在はカタログデモを公開中です')).toBeVisible();
+  await expect(page.getByText('ただいまログインをご利用いただけません')).toBeVisible();
 });
 
 test('Lab pages and endpoints remain inaccessible', async ({ request }) => {
@@ -82,6 +82,14 @@ test('real test-account login, verified profile, safe redirect and logout', asyn
   await page.getByRole('button', { name: 'ログインする' }).click();
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.locator('.account-page')).toContainText('テストユーザー A');
+  await page.getByRole('link', { name: '注文履歴・お客様情報' }).click();
+  await expect(page.locator('.demo-order-row')).toHaveCount(2);
+  await page.locator('.demo-order-row').first().click();
+  await expect(page.getByText('架空 花子', { exact: true })).toBeVisible();
+  await expect.poll(() => page.locator('.license-image').evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await page.goto('/orders/2000000b-0000-4000-8000-000000000001');
+  await expect(page.getByRole('heading', { name: '注文が見つかりませんでした' })).toBeVisible();
+  await page.goto('/account');
   await page.getByRole('button', { name: 'ログアウト', exact: true }).click();
   await expect(page).toHaveURL(/\/login(?:\?returnTo=%2Faccount)?$/);
   await page.goto('/account');

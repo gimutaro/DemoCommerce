@@ -1,3 +1,5 @@
+import { Orders } from './Orders'
+import { AttackLab } from './AttackLab'
 import { createContext, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -25,7 +27,7 @@ function Brand({ light = false }: { light?: boolean }) {
   return <Link to="/" className={`brand${light ? ' brand-light' : ''}`} aria-label="DemoCommerce ホーム"><span className="brand-symbol" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><path d="M24 5v38M5 24h38M10.5 10.5l27 27M10.5 37.5l27-27" /><circle cx="24" cy="24" r="4" fill="var(--paper)" strokeWidth="2.5" /></svg></span><span>DemoCommerce<span className="brand-caption">日々に、いいもの。</span></span></Link>
 }
 
-type AppConfig = { mode: 'mock' | 'supabase' | 'unconfigured'; supabaseUrl?: string; supabasePublishableKey?: string }
+type AppConfig = { mode: 'mock' | 'supabase' | 'unconfigured'; supabaseUrl?: string; supabasePublishableKey?: string; attackLabEnabled?: boolean }
 type AuthState = { client: SupabaseClient | null; session: Session | null; config: AppConfig | null; loading: boolean; error: boolean }
 const AuthContext = createContext<AuthState>({ client: null, session: null, config: null, loading: true, error: false })
 function AuthProvider({ children }: { children: ReactNode }) {
@@ -64,7 +66,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 function Header() {
-  const { session } = useContext(AuthContext)
+  const { session, config } = useContext(AuthContext)
   const [open, setOpen] = useState(false)
   const location = useLocation()
   function searchCatalog() {
@@ -74,16 +76,16 @@ function Header() {
     }
   }
   return <>
-    <div className="announcement"><span>いつもの毎日に、ちょうどいいものを。</span><span className="demo-tag">DEMO STORE<span>架空のストアです</span></span></div>
+    <div className="announcement"><span>いつもの毎日に、ちょうどいいものを。</span><span className="demo-tag">日々に、いいもの。</span></div>
     <header className="site-header">
-      <div className="header-inner"><Brand /><nav className="desktop-nav" aria-label="メインナビゲーション"><Link to="/#collection">商品をさがす</Link><Link to="/#about">私たちについて</Link></nav><div className="header-actions"><Link to="/#collection" className="icon-button" aria-label="商品を検索" onClick={searchCatalog}><Icon name="search" /></Link><Link to={session ? '/account' : '/login'} className="account-link" aria-label={session ? 'マイページ' : 'ログイン'}><Icon name="user" /><span>{session ? 'マイページ' : 'ログイン'}</span></Link><button className="icon-button menu-button" type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? 'メニューを閉じる' : 'メニューを開く'}><Icon name={open ? 'close' : 'menu'} /></button></div></div>
-      {open && <nav className="mobile-nav" id="mobile-menu" aria-label="モバイルナビゲーション"><Link to="/#collection" onClick={() => setOpen(false)}>商品をさがす<Icon name="arrow" /></Link><Link to="/#about" onClick={() => setOpen(false)}>私たちについて<Icon name="arrow" /></Link><Link to={session ? '/account' : '/login'} onClick={() => setOpen(false)}>{session ? 'マイページ' : 'ログイン'}<Icon name="arrow" /></Link></nav>}
+      <div className="header-inner"><Brand /><nav className="desktop-nav" aria-label="メインナビゲーション"><Link to="/#collection">商品をさがす</Link><Link to="/#about">私たちについて</Link></nav><div className="header-actions"><Link to="/#collection" className="icon-button" aria-label="商品を検索" onClick={searchCatalog}><Icon name="search" /></Link><Link to={config?.attackLabEnabled || session ? '/account' : '/login'} className="account-link" aria-label={config?.attackLabEnabled || session ? 'マイページ' : 'ログイン'}><Icon name="user" /><span>{config?.attackLabEnabled || session ? 'マイページ' : 'ログイン'}</span></Link><button className="icon-button menu-button" type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? 'メニューを閉じる' : 'メニューを開く'}><Icon name={open ? 'close' : 'menu'} /></button></div></div>
+      {open && <nav className="mobile-nav" id="mobile-menu" aria-label="モバイルナビゲーション"><Link to="/#collection" onClick={() => setOpen(false)}>商品をさがす<Icon name="arrow" /></Link><Link to="/#about" onClick={() => setOpen(false)}>私たちについて<Icon name="arrow" /></Link><Link to={config?.attackLabEnabled || session ? '/account' : '/login'} onClick={() => setOpen(false)}>{config?.attackLabEnabled || session ? 'マイページ' : 'ログイン'}<Icon name="arrow" /></Link></nav>}
     </header>
   </>
 }
 
 function Footer() {
-  return <footer className="site-footer"><div className="footer-main"><Brand /><p>選ぶ時間も、使う時間も。<br />日々の小さな楽しみを、ここから。</p><div className="footer-links"><Link to="/#collection">商品一覧<Icon name="arrow" size={15} /></Link><Link to="/#about">私たちについて<Icon name="arrow" size={15} /></Link><Link to="/login">テストアカウント<Icon name="arrow" size={15} /></Link></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} DemoCommerce</span><p>DEMO ONLY · 架空の商品を扱うデモサイトです。実際の購入・決済・配送は行いません。</p><a href="#top" className="back-top">PAGE TOP <span>↑</span></a></div></footer>
+  return <footer className="site-footer"><div className="footer-main"><Brand /><p>選ぶ時間も、使う時間も。<br />日々の小さな楽しみを、ここから。</p><div className="footer-links"><Link to="/#collection">商品一覧<Icon name="arrow" size={15} /></Link><Link to="/#about">私たちについて<Icon name="arrow" size={15} /></Link><Link to="/login">会員ログイン<Icon name="arrow" size={15} /></Link></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} DemoCommerce</span><p>毎日の暮らしに寄り添う道具を、一つひとつ。</p><a href="#top" className="back-top">PAGE TOP <span>↑</span></a></div></footer>
 }
 
 function PageScroll() {
@@ -136,7 +138,7 @@ function Home() {
     <section className="values-bar" aria-label="ストアのこだわり"><div><Icon name="leaf" size={25} /><span>つかうほど、好きになる<small>MADE FOR EVERYDAY</small></span></div><div><Icon name="sun" size={27} /><span>暮らしになじむデザイン<small>SIMPLE & THOUGHTFUL</small></span></div><div><Icon name="box" size={25} /><span>小さな「いいね」を集めて<small>A LITTLE JOY, EVERY DAY</small></span></div></section>
     <section className="collection section-wrap" id="collection" aria-labelledby="collection-title"><div className="section-heading"><div><p className="eyebrow">OUR COLLECTION</p><h2 id="collection-title">日々を、ととのえる。</h2></div><p>いつもの場所に、いつものお気に入り。<br />あなたの毎日に寄り添う、10の道具。</p></div><div className="collection-toolbar"><div className="category-tabs" role="group" aria-label="商品のカテゴリ">{['すべて', '文房具', '暮らし', 'ガジェット'].map((cat) => <button key={cat} type="button" aria-pressed={category === cat} className={category === cat ? 'category-tab active' : 'category-tab'} onClick={() => setCategory(cat)}>{cat}{cat === 'すべて' && <span>{products.length || '10'}</span>}</button>)}</div><div className="search-field"><Icon name="search" size={18} /><input id="product-search" type="search" aria-label="商品を検索" placeholder="商品をさがす" value={query} onChange={(event) => setQuery(event.target.value)} />{query && <button type="button" className="clear-search" aria-label="検索をクリア" onClick={() => setQuery('')}><Icon name="close" size={15} /></button>}</div></div><div className="collection-result" aria-live="polite">{!loading && !error && <><span>{filtered.length} ITEMS</span>{(query || category !== 'すべて') && <button type="button" onClick={() => { setQuery(''); setCategory('すべて') }}>絞り込みをクリア<Icon name="close" size={12} /></button>}</>}</div>{loading ? <ProductSkeleton /> : error ? <StateMessage title="商品を読み込めませんでした" retry={() => { setLoading(true); setError(false); setAttempt(attempt + 1) }}>通信状況をご確認のうえ、もう一度お試しください。</StateMessage> : filtered.length === 0 ? <StateMessage title="お探しの商品が見つかりませんでした">キーワードやカテゴリを変えて、もう一度さがしてみてください。</StateMessage> : <div className="product-grid">{filtered.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}</div>}<div className="collection-end"><span /><p>暮らしに、ちいさな余白を。</p><span /></div></section>
     <section className="about-section" id="about" aria-labelledby="about-title"><div className="about-art"><img src="/quiet-moments.svg" alt="机の上のノートとコーヒー。日々の静かなひととき。" loading="lazy" width="800" height="600" /><span className="about-art-label">THE ART OF EVERYDAY.</span></div><div className="about-copy"><p className="eyebrow">A NOTE FROM US</p><h2 id="about-title">なんでもない日を、<br />ちょっと好きになる。</h2><p>暮らしを変えるのは、<br />案外、小さなものなのかもしれません。</p><p>書き心地のいいペン。<br />朝のコーヒーが楽しみになるカップ。<br />私たちは、そんな「ちょうどいい」を大切にしています。</p><div className="about-signature">日々に、いいもの。<span>DemoCommerce</span></div></div></section>
-    <section className="demo-note section-wrap"><span className="demo-note-icon">i</span><div><h2>これは、架空のストアです。</h2><p>DemoCommerceは、架空の商品とテストアカウントで体験するデモサイトです。実際の商品販売や決済、配送は行いません。</p></div><span className="demo-note-label">DEMO ONLY</span></section>
+    <section className="demo-note section-wrap"><span className="demo-note-icon">i</span><div><h2>お気に入りを、ゆっくりと。</h2><p>素材やかたち、使い心地。あなたの毎日にちょうどいい道具を見つけてください。</p></div><Link className="demo-note-label" to="/contact">CONTACT US →</Link></section>
   </main>
 }
 
@@ -170,7 +172,7 @@ function ProductDetail() {
   if (state === 'loading') return <main className="section-wrap detail-loading" aria-busy="true"><div className="detail-skeleton skeleton-art" /><div><div className="skeleton-line" /><div className="skeleton-line" /><div className="skeleton-line short" /></div></main>
   if (state === 'missing') return <NotFound product />
   if (state === 'error' || !product) return <main className="section-wrap short-page"><StateMessage title="商品を読み込めませんでした" retry={() => { setState('loading'); setAttempt(attempt + 1) }}>通信状況をご確認のうえ、もう一度お試しください。</StateMessage></main>
-  return <main className="section-wrap detail-page"><Breadcrumb current={product.name} /><section className="product-detail"><div className={`detail-art product-art-${product.slug}`}><img src={product.image_path} alt={product.name} width="700" height="756" /><span className="detail-art-caption">A GOOD THING FOR YOUR EVERYDAY.</span></div><div className="detail-copy"><p className="eyebrow">{product.category} <span> / EVERYDAY ESSENTIALS</span></p><h1>{product.name}</h1><p className="detail-price">{yen(product.price_jpy)}<span>税込</span></p><p className="detail-description">{product.description}</p><div className="stock-line"><span className={product.stock > 0 ? 'stock-dot' : 'stock-dot unavailable'} />{product.stock > 0 ? `在庫あり（${product.stock}点）` : 'ただいま在庫がありません'}<span>架空の在庫です</span></div><div className="detail-demo-notice"><span className="mini-eyebrow">DEMO ITEM</span><p>日々の「いいもの」を見つける、デモストア。<br />この商品は展示用です。実際の購入はできません。</p></div><Link to="/#collection" className="button button-dark detail-back">ほかの商品も見てみる<Icon name="arrow" size={18} /></Link><details className="detail-accordion" open><summary>この商品について<span>＋</span></summary><p>毎日にそっとなじむ、シンプルな暮らしの道具。こちらはDemoCommerceの架空の商品です。商品画像はイメージイラストです。</p></details><details className="detail-accordion"><summary>デモストアについて<span>＋</span></summary><p>架空の商品とテストアカウントを使用するデモサイトです。実際の商品販売・お支払い・配送は行っていません。</p></details></div></section><div className="detail-bottom"><Icon name="leaf" size={23} /><p>使う時間が、好きになる。<span>LESS, BUT LOVELY.</span></p><Link to="/#collection">商品一覧へ<Icon name="arrow" size={18} /></Link></div></main>
+  return <main className="section-wrap detail-page"><Breadcrumb current={product.name} /><section className="product-detail"><div className={`detail-art product-art-${product.slug}`}><img src={product.image_path} alt={product.name} width="700" height="756" /><span className="detail-art-caption">A GOOD THING FOR YOUR EVERYDAY.</span></div><div className="detail-copy"><p className="eyebrow">{product.category} <span> / EVERYDAY ESSENTIALS</span></p><h1>{product.name}</h1><p className="detail-price">{yen(product.price_jpy)}<span>税込</span></p><p className="detail-description">{product.description}</p><div className="stock-line"><span className={product.stock > 0 ? 'stock-dot' : 'stock-dot unavailable'} />{product.stock > 0 ? `在庫あり（${product.stock}点）` : 'ただいま在庫がありません'}<span>商品番号：{product.slug.toUpperCase()}</span></div><div className="detail-demo-notice"><span className="mini-eyebrow">EVERYDAY ESSENTIALS</span><p>日々の暮らしに、そっとなじむ。<br />お気に入りの道具と、心地よい時間を。</p></div><Link to="/#collection" className="button button-dark detail-back">ほかの商品も見てみる<Icon name="arrow" size={18} /></Link><details className="detail-accordion" open><summary>この商品について<span>＋</span></summary><p>毎日にそっとなじむ、シンプルな暮らしの道具。素材や使い心地を大切に、毎日使いたくなるものを集めました。商品画像はイメージです。</p></details><details className="detail-accordion"><summary>ストアについて<span>＋</span></summary><p>文房具、暮らしの道具、ガジェット。いつもの毎日に小さな楽しみを添えるアイテムをお届けします。</p></details></div></section><div className="detail-bottom"><Icon name="leaf" size={23} /><p>使う時間が、好きになる。<span>LESS, BUT LOVELY.</span></p><Link to="/#collection">商品一覧へ<Icon name="arrow" size={18} /></Link></div></main>
 }
 
 function safeReturnTo(value: string | null) {
@@ -178,7 +180,7 @@ function safeReturnTo(value: string | null) {
   try { const target = new URL(value, window.location.origin); return target.origin === window.location.origin && target.pathname !== '/login' ? `${target.pathname}${target.search}${target.hash}` : '/account' } catch { return '/account' }
 }
 function Login() {
-  const { client, session, loading, error: configError } = useContext(AuthContext)
+  const { client, session, loading, config, error: configError } = useContext(AuthContext)
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -186,6 +188,7 @@ function Login() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const returnTo = safeReturnTo(params.get('returnTo'))
+  if (config?.attackLabEnabled && params.get('auth') !== 'supabase') return <AttackLab />
   if (session) return <Navigate to={returnTo} replace />
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -198,11 +201,11 @@ function Login() {
       navigate(returnTo, { replace: true })
     } catch { setError('接続できませんでした。通信状況をご確認のうえ、もう一度お試しください。') } finally { setSubmitting(false) }
   }
-  return <main className="login-page section-wrap"><Link className="text-back" to="/"><span>←</span> ストアに戻る</Link><div className="login-layout"><div className="login-art"><img src="/quiet-moments.svg" alt="コーヒーとノートを楽しむ、静かな机の風景" width="800" height="600" /><div><p className="eyebrow">WELCOME TO YOUR EVERYDAY</p><h2>お気に入りのある、<br />いつもの毎日。</h2><span>日々に、いいもの。</span></div></div><section className="login-panel" aria-labelledby="login-title"><p className="eyebrow">GOOD TO SEE YOU</p><h1 id="login-title">おかえりなさい。</h1><p className="login-intro">テストアカウントでログインして、<br />DemoCommerceを体験しましょう。</p>{!loading && !client && <div className="notice-box" role="status"><strong>{configError ? 'ログイン情報を読み込めませんでした' : '現在はカタログデモを公開中です'}</strong><p>{configError ? 'ページを再読み込みして、もう一度お試しください。' : '商品は自由にご覧いただけます。ログインには、ストア管理者による認証の設定が必要です。'}</p>{configError && <button type="button" className="inline-link" onClick={() => window.location.reload()}>ページを再読み込み</button>}</div>}<form onSubmit={(event) => void login(event)}><label htmlFor="email">メールアドレス<input id="email" type="email" name="email" autoComplete="username" placeholder="テストアカウントのメールアドレス" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} disabled={!client || loading || submitting} /></label><label htmlFor="password">パスワード<input id="password" type="password" name="password" autoComplete="current-password" placeholder="パスワードを入力" required maxLength={256} value={password} onChange={(event) => setPassword(event.target.value)} disabled={!client || loading || submitting} /></label>{error && <p className="form-error" role="alert">{error}</p>}<button className="button button-dark login-submit" type="submit" disabled={!client || loading || submitting}>{loading ? '準備中…' : submitting ? 'ログイン中…' : 'ログインする'}{!loading && !submitting && <Icon name="arrow" size={18} />}</button></form><p className="login-test-note"><Icon name="user" size={17} /><span>管理者が用意した架空のテストアカウント専用です。<br />実際の個人情報は入力しないでください。</span></p><div className="login-bottom"><span>DEMO ONLY</span><Link to="/#collection">商品を見てみる<Icon name="arrow" size={15} /></Link></div></section></div></main>
+  return <main className="login-page section-wrap"><Link className="text-back" to="/"><span>←</span> ストアに戻る</Link><div className="login-layout"><div className="login-art"><img src="/quiet-moments.svg" alt="コーヒーとノートを楽しむ、静かな机の風景" width="800" height="600" /><div><p className="eyebrow">WELCOME TO YOUR EVERYDAY</p><h2>お気に入りのある、<br />いつもの毎日。</h2><span>日々に、いいもの。</span></div></div><section className="login-panel" aria-labelledby="login-title"><p className="eyebrow">GOOD TO SEE YOU</p><h1 id="login-title">おかえりなさい。</h1><p className="login-intro">ご登録のアカウントでログインして、<br />お気に入りのある毎日を。</p>{!loading && !client && <div className="notice-box" role="status"><strong>{configError ? 'ログイン情報を読み込めませんでした' : 'ただいまログインをご利用いただけません'}</strong><p>{configError ? 'ページを再読み込みして、もう一度お試しください。' : '商品は引き続きご覧いただけます。しばらくしてから、もう一度お試しください。'}</p>{configError && <button type="button" className="inline-link" onClick={() => window.location.reload()}>ページを再読み込み</button>}</div>}<form onSubmit={(event) => void login(event)}><label htmlFor="email">メールアドレス<input id="email" type="email" name="email" autoComplete="username" placeholder="メールアドレスを入力" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} disabled={!client || loading || submitting} /></label><label htmlFor="password">パスワード<input id="password" type="password" name="password" autoComplete="current-password" placeholder="パスワードを入力" required maxLength={256} value={password} onChange={(event) => setPassword(event.target.value)} disabled={!client || loading || submitting} /></label>{error && <p className="form-error" role="alert">{error}</p>}<button className="button button-dark login-submit" type="submit" disabled={!client || loading || submitting}>{loading ? '準備中…' : submitting ? 'ログイン中…' : 'ログインする'}{!loading && !submitting && <Icon name="arrow" size={18} />}</button></form><p className="login-test-note"><Icon name="user" size={17} /><span>ご登録のメールアドレスでログインできます。</span></p><div className="login-bottom"><span>YOUR EVERYDAY</span><Link to="/#collection">商品を見てみる<Icon name="arrow" size={15} /></Link></div></section></div></main>
 }
 
 function Account() {
-  const { session, client, loading } = useContext(AuthContext)
+  const { session, client, loading, config } = useContext(AuthContext)
   const [profile, setProfile] = useState<{ id: string; displayName: string } | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -221,6 +224,7 @@ function Account() {
     return () => controller.abort()
   }, [session, attempt])
   if (loading) return <main className="section-wrap short-page"><StateMessage title="準備しています">少しだけお待ちください。</StateMessage></main>
+  if (config?.attackLabEnabled) return <AttackLab key="account" />
   if (!session) return <Navigate to="/login?returnTo=%2Faccount" replace />
   async function signOut() {
     if (!client) return
@@ -230,7 +234,13 @@ function Account() {
       if (signOutError) setError('ログアウトできませんでした。もう一度お試しください。')
     } catch { setError('ログアウトできませんでした。通信状況をご確認ください。') } finally { setBusy(false) }
   }
-  return <main className="section-wrap account-page"><p className="eyebrow">YOUR ACCOUNT</p><h1>マイページ</h1><p className="account-welcome">今日も、日々にいいものを。</p><section className="profile-card"><span className="profile-avatar"><Icon name="user" size={31} /></span><div><p className="eyebrow">TEST ACCOUNT</p><h2>{profile?.displayName || 'テストアカウント'}</h2><p>架空のデモアカウントでログインしています。</p></div><span className="signed-in"><Icon name="check" size={13} />ログイン中</span></section>{error && <div className="notice-box" role="alert"><p>{error}</p><button className="inline-link" type="button" onClick={() => { setError(''); setAttempt(attempt + 1) }}>プロフィールを再読み込み</button></div>}<div className="account-actions"><Link to="/#collection" className="button button-dark">商品をさがす<Icon name="arrow" size={18} /></Link><button type="button" className="button button-outline" onClick={() => void signOut()} disabled={busy}>{busy ? 'ログアウト中…' : 'ログアウト'}</button></div><p className="account-note">このデモでは商品閲覧とテストアカウントのログインをお試しいただけます。実際の購入・決済・配送は行いません。</p></main>
+  return <main className="section-wrap account-page"><p className="eyebrow">YOUR ACCOUNT</p><h1>マイページ</h1><p className="account-welcome">今日も、日々にいいものを。</p><section className="profile-card"><span className="profile-avatar"><Icon name="user" size={31} /></span><div><p className="eyebrow">MEMBER ACCOUNT</p><h2>{profile?.displayName || 'お客様'}</h2><p>ご登録の会員情報をご確認いただけます。</p></div><span className="signed-in"><Icon name="check" size={13} />ログイン中</span></section>{error && <div className="notice-box" role="alert"><p>{error}</p><button className="inline-link" type="button" onClick={() => { setError(''); setAttempt(attempt + 1) }}>プロフィールを再読み込み</button></div>}<div className="account-actions"><Link to="/orders" className="button button-outline">注文履歴・お客様情報</Link><Link to="/#collection" className="button button-dark">商品をさがす<Icon name="arrow" size={18} /></Link><button type="button" className="button button-outline" onClick={() => void signOut()} disabled={busy}>{busy ? 'ログアウト中…' : 'ログアウト'}</button></div><p className="account-note">ご注文や登録情報は、マイページからご確認いただけます。</p></main>
+}
+
+function OrderPage() {
+  const { session, loading } = useContext(AuthContext)
+  const { pathname } = useLocation()
+  return <Orders key={pathname + (session?.user.id ?? '')} session={session} loading={loading} />
 }
 
 function NotFound({ product = false }: { product?: boolean }) {
@@ -238,5 +248,5 @@ function NotFound({ product = false }: { product?: boolean }) {
 }
 export default function App() {
   const { pathname } = useLocation()
-  return <AuthProvider><div id="top" /><a className="skip-link" href="#main-content">本文へスキップ</a><PageScroll /><Header key={pathname} /><div id="main-content" tabIndex={-1}><Routes><Route path="/" element={<Home />} /><Route path="/products/:slug" element={<ProductDetail key={pathname} />} /><Route path="/login" element={<Login />} /><Route path="/account" element={<Account />} /><Route path="*" element={<NotFound />} /></Routes></div><Footer /></AuthProvider>
+  return <AuthProvider><div id="top" /><a className="skip-link" href="#main-content">本文へスキップ</a><PageScroll /><Header key={pathname} /><div id="main-content" tabIndex={-1}><Routes><Route path="/" element={<Home />} /><Route path="/products/:slug" element={<ProductDetail key={pathname} />} /><Route path="/login" element={<Login />} /><Route path="/account" element={<Account />} /><Route path="/orders" element={<OrderPage />} /><Route path="/orders/:id" element={<OrderPage />} /><Route path="/lab/orders/:id" element={<OrderPage />} /><Route path="/lab/workbench" element={<AttackLab key={pathname} />} /><Route path="/contact" element={<AttackLab key={pathname} />} /><Route path="/staff" element={<AttackLab key={pathname} />} /><Route path="*" element={<NotFound />} /></Routes></div><Footer /></AuthProvider>
 }

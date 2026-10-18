@@ -1,5 +1,7 @@
 # DemoCommerce — 日々に、いいもの。
 
+> **ハッカソン用追加実装（2026-10-18）**：注文閲覧、架空顧客情報・免許証サンプル、隔離Lab比較、JSON保存を追加しました。最新の構成・チーム共有・セットアップ・LeakReplay入力は **[TEAM_DEMO_GUIDE.md](TEAM_DEMO_GUIDE.md)** を参照してください。以下のM0/M1説明は元の基盤実装の記録で、今回追加した注文/Labの状態は同ガイドが優先です。
+
 LeakReplayの検査対象として開発する架空の通販サイトです。React / Vite / TypeScriptの画面とHono APIを、Cloudflare Vite pluginを通して同じWorkersランタイムで動かします。認証とDBはSupabase Auth / PostgreSQLを使用します。
 
 実装範囲は **M0 + M1** です。ローカルSVG画像付きの商品10点、JPY価格、検索・カテゴリ、商品詳細、ログイン、本人プロフィール、スマホ対応、DB migration / seed / RLS、A・Bテストデータ作成を含みます。カート・注文作成・注文履歴UI/APIはM2、意図的なLab脆弱性はM3の対象です。クラウドへのデプロイは行っていません。

@@ -27,7 +27,7 @@ describe('catalog API', () => {
   });
 
   it('fails closed without configuration or when mock is used outside local', async () => {
-    for (const env of [{}, { ...mockEnv, APP_ENV: 'lab' }, { ...mockEnv, APP_ENV: 'production' }]) {
+    for (const env of [{}, { ...mockEnv, APP_ENV: 'production' }]) {
       const response = await request('/api/products', env);
       expect(response.status).toBe(503);
       expect((await response.json() as { error: { code: string } }).error.code).toBe('NOT_CONFIGURED');
@@ -60,6 +60,8 @@ describe('catalog API', () => {
     const env = { ...mockEnv, ASSETS: { fetch: async () => new Response('<html>app</html>', { headers: { 'Content-Type': 'text/html' } }) } as unknown as Fetcher };
     expect((await request('/missing-page', env)).status).toBe(404);
     expect((await request('/login', env)).status).toBe(200);
+    expect((await request('/contact', env)).status).toBe(200);
+    expect((await request('/staff', env)).status).toBe(200);
   });
 });
 

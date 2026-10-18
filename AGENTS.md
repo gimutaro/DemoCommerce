@@ -1,5 +1,16 @@
 # Codex開発ルール — DemoCommerce
 
+## 2026-10-18 追加依頼：公開攻撃Lab
+
+ユーザーは `democommerce-lab.democommerce.workers.dev` を意図的に脆弱な公開デモへ拡張することを明示的に依頼しました。既存PR #1の架空顧客デモを土台に、`/api/attack-lab` と `/lab/workbench` を追加します。この追加依頼は初期M0/M1限定・Access必須という下記の初期制約より優先します。
+
+- 公開UIは脆弱版のみ。実データ、実サービスの鍵、通常のSupabaseセッションを攻撃デモへ渡さない。
+- SQLiはリクエスト専用のメモリーSQLiteと架空顧客102件だけ。Supabaseへ任意SQLを送らない。
+- ファイル参照は固定した仮想ドキュメントだけ。OSファイル、ネットワーク先、環境変数は読まない。
+- XSSは専用iframeとCSP sandboxで隔離し、allow-same-origin・外部通信・トップ画面遷移は許可しない。
+- Labは明示フラグ、32文字以上の専用セッション鍵、完全一致ホストで有効化。通常環境では404。
+- 回帰テスト用の固定コントロールはAPI内部に保持できるが、公開UIには修正版の選択を表示しない。
+
 ## 読む順序
 `CODEX_START.md` → `SPEC.md` → `TEST_MATRIX.md` → `DEPLOY_CLOUDFLARE_SUPABASE.md` → `integrations/leakreplay-fixtures.json`。
 

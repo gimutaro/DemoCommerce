@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseEnv } from 'node:util'
 import { buyerFixtures, TEST_BUYERS, validateFixtureTarget } from '../src/shared/fixtures'
 import { PRODUCTS } from '../src/shared/products'
+import { customerFixture } from '../src/shared/customers'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const credentialsPath = resolve(root, '.fixtures/test-users.env')
@@ -139,6 +140,8 @@ export async function provisionTestUsers(): Promise<void> {
       : await admin.auth.admin.createUser({ email: buyer.email, ...attributes })
     if (error || !data.user) throw new Error(`Could not provision synthetic account ${buyer.key}. No credentials were printed.`)
     await writeBuyerFixtures(admin, buyer.key, data.user.id, false)
+    const { error: customerError } = await admin.from('demo_customers').upsert(customerFixture(buyer.key, data.user.id), { onConflict: 'user_id' })
+    if (customerError) throw new Error('Could not save synthetic customers. Apply the customer migration first.')
   }
   console.info('Provisioned 2 synthetic accounts and 4 stable fixture orders. No emails, payments or deliveries are sent.')
 }

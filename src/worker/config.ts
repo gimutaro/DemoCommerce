@@ -1,3 +1,4 @@
+import { labConfigured } from './lab';
 export interface Bindings {
   ASSETS: Fetcher;
   APP_ENV?: string;
@@ -5,6 +6,15 @@ export interface Bindings {
   DATA_MODE?: string;
   SUPABASE_URL?: string;
   SUPABASE_PUBLISHABLE_KEY?: string;
+  SUPABASE_SECRET_KEY?: string;
+  LAB_SUPABASE_URL?: string;
+  LAB_SYNTHETIC_ONLY?: string;
+  ACCESS_TEAM_DOMAIN?: string;
+  ACCESS_AUD?: string;
+  LOCAL_DEMO_ENABLED?: string;
+  PUBLIC_DEMO_ENABLED?: string;
+  ATTACK_LAB_ENABLED?: string;
+  ATTACK_LAB_SESSION_SECRET?: string;
 }
 
 export function isPublishableKey(key: string): boolean {
@@ -38,7 +48,7 @@ export function supabaseConfig(env: Partial<Bindings>) {
 }
 
 export function dataMode(env: Partial<Bindings>): 'mock' | 'supabase' | 'unconfigured' {
-  if (env.LAB_ENABLED && env.LAB_ENABLED !== 'false') return 'unconfigured'; // Lab is not part of M0/M1.
+  if (env.LAB_ENABLED && env.LAB_ENABLED !== 'false' && !labConfigured(env)) return 'unconfigured';
   if (env.DATA_MODE === 'mock' && env.APP_ENV === 'local') return 'mock';
   if (env.DATA_MODE === 'supabase' && supabaseConfig(env)) return 'supabase';
   return 'unconfigured';

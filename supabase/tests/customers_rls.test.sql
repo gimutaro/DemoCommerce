@@ -1,0 +1,18 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+set local search_path = public, extensions;
+select plan(6);
+insert into auth.users(id,email) values ('91000000-0000-4000-8000-000000000001','customer-rls@example.test');
+insert into public.demo_customers values ('91000000-0000-4000-8000-000000000001','架空 花子','1995-04-12','000-0000','架空県サンプル市','000-0000-0001','buyer-a@example.test','DEMO-INVALID-A','SAMPLE','架空会社',true);
+select ok((select relrowsecurity from pg_class where oid='public.demo_customers'::regclass),'customer RLS enabled');
+select ok(not has_table_privilege('anon','public.demo_customers','SELECT'),'anonymous denied');
+select ok(not has_table_privilege('authenticated','public.demo_customers','INSERT,UPDATE,DELETE'),'client mutations denied');
+set local role authenticated;
+select set_config('request.jwt.claims','{"sub":"91000000-0000-4000-8000-000000000001","role":"authenticated"}',true);
+select is((select count(*) from public.demo_customers),1::bigint,'owner can read identity');
+select set_config('request.jwt.claims','{"sub":"91000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
+select is((select count(*) from public.demo_customers),0::bigint,'other buyer cannot read identity or image');
+reset role;
+select ok(has_table_privilege('service_role','public.demo_customers','SELECT'),'server can read lab fixtures');
+select * from finish();
+rollback;

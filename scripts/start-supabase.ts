@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { request } from 'node:http';
+import { fileURLToPath } from 'node:url';
 
 // Supabase CLI 2.121's slim Auth probe uses BusyBox wget, which ignores
 // NO_PROXY in managed Docker environments. Repair only that loopback probe;
@@ -14,7 +15,7 @@ process.env.SUPABASE_INTERNAL_IMAGE_REGISTRY ??= 'docker.io';
 function dockerApi(method: string, path: string, body?: unknown): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const payload = body === undefined ? undefined : JSON.stringify(body);
-    const req = request({ socketPath: '/var/run/docker.sock', method, path,
+    const req = request({ socketPath: process.platform === 'win32' ? '\\\\.\\pipe\\docker_engine' : '/var/run/docker.sock', method, path,
       headers: payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {},
     }, (response) => {
       const chunks: Buffer[] = [];
@@ -71,7 +72,7 @@ async function main() {
   // The native proxy-sensitive probe is replaced and strictly rechecked below.
   if (proxy) args.push('--ignore-health-check');
   const exitCode = await new Promise<number | null>((resolve, reject) => {
-    const child = spawn('supabase', args, { stdio: ['ignore', 'ignore', 'ignore'] });
+    const child = spawn(process.execPath, [fileURLToPath(new URL('../node_modules/supabase/dist/supabase.js', import.meta.url)), ...args], { stdio: ['ignore', 'ignore', 'ignore'] });
     child.on('error', () => reject(new Error('Supabase CLI could not start. Run npm ci first.')));
     child.on('exit', resolve);
   });
